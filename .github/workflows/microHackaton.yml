@@ -1,11 +1,48 @@
 name: micro-hackaton
-on: push
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
-  micro-hackaton-jobs:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: Checkout repository
         uses: actions/checkout@v3
-      - run: echo "$(test1.sh)"
-      
+
+      - name: Set up Node.js (or any other necessary tool)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Construir la application
+        run: npm run build
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        test_file: [test1.sh, test2.sh, test3.sh]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        run: |
+          chmod +x ./tests/${{ matrix.test_file }}
+          ./tests/${{ matrix.test_file }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Deployment step
+        run: echo "Deploying the microservice..."   
 
